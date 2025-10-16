@@ -6,7 +6,7 @@ import axios, {
 
 import { storage } from "@/lib/storage"
 
-const fallbackBaseUrl = "http://localhost:3000/api"
+const fallbackBaseUrl = "http://localhost:54321/api"
 
 const baseURL = import.meta.env.VITE_API_URL ?? fallbackBaseUrl
 

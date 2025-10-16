@@ -17,6 +17,45 @@ const safeParse = <T>(raw: string | null): T | null => {
   }
 }
 
+const decodeBase64 = (value: string) => {
+  if (typeof atob === "function") {
+    return atob(value)
+  }
+
+  const globalRef = globalThis as Record<string, unknown>
+  const maybeBuffer = globalRef?.Buffer as { from?: (input: string, encoding: string) => { toString: (encoding: string) => string } } | undefined
+
+  if (maybeBuffer?.from) {
+    return maybeBuffer.from(value, "base64").toString("utf-8")
+  }
+
+  throw new Error("No base64 decoder available")
+}
+
+const decodeToken = (token: string) => {
+  try {
+    const [, payload] = token.split(".")
+    if (!payload) return null
+    const decoded = JSON.parse(decodeBase64(payload)) as { id?: string; email?: string; role?: string }
+    return decoded
+  } catch (error) {
+    console.warn("Failed to decode token", error)
+    return null
+  }
+}
+
+const mergeUserWithToken = (user: User, token: string) => {
+  const decoded = decodeToken(token)
+  if (!decoded) return user
+
+  return {
+    ...user,
+    id: decoded.id ?? user.id,
+    email: decoded.email ?? user.email,
+    role: (decoded.role as User["role"]) ?? user.role,
+  }
+}
+
 const setToken = (token: string) => {
   if (!isBrowser) return
   window.localStorage.setItem(TOKEN_KEY, token)
@@ -38,19 +77,26 @@ const getUser = () => {
 }
 
 const setSession = ({ token, user }: AuthResponse) => {
+  const mergedUser = mergeUserWithToken(user, token)
   setToken(token)
-  setUser(user)
+  setUser(mergedUser)
 }
 
 const getSession = () => {
   const token = getToken()
-  const user = getUser()
+  const storedUser = getUser()
 
-  if (!token || !user) {
+  if (!token || !storedUser) {
     return null
   }
 
-  return { token, user }
+  const mergedUser = mergeUserWithToken(storedUser, token)
+
+  if (mergedUser !== storedUser) {
+    setUser(mergedUser)
+  }
+
+  return { token, user: mergedUser }
 }
 
 const clearSession = () => {
