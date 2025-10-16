@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
-import { toast } from "sonner"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,21 +31,8 @@ import {
   useUpdateBusinessHours,
 } from "@/hooks/use-businesses"
 import { useBusinessCategories } from "@/hooks/use-categories"
-import { useCreateReservation } from "@/hooks/use-reservations"
+import { ReservationDialog } from "@/components/reservations/reservation-dialog"
 import type { BusinessHours, BusinessSummary, UpsertBusinessPayload } from "@/types/business"
-
-const reservationSchema = z
-  .object({
-    startTime: z.string().min(1, "Selecciona una fecha de inicio"),
-    endTime: z.string().min(1, "Selecciona una fecha de fin"),
-    numberOfPeople: z.number().min(1, "Debe ser al menos 1 persona").max(8, "Máximo 8 personas"),
-  })
-  .refine((data) => new Date(data.endTime) > new Date(data.startTime), {
-    path: ["endTime"],
-    message: "La hora de fin debe ser posterior a la de inicio",
-  })
-
-type ReservationFormValues = z.infer<typeof reservationSchema>
 
 const businessSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -78,123 +64,6 @@ const formatHour = (value: string | null) => {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ""
   return date.toISOString().slice(11, 16)
-}
-
-const convertToDateTimeLocal = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ""
-  return date.toISOString().slice(0, 16)
-}
-
-const ReservationDialog = ({ business }: { business: BusinessSummary }) => {
-  const [open, setOpen] = useState(false)
-  const createReservation = useCreateReservation()
-
-  const form = useForm<ReservationFormValues>({
-    resolver: zodResolver(reservationSchema),
-    defaultValues: {
-      startTime: "",
-      endTime: "",
-      numberOfPeople: 1,
-    },
-  })
-
-  const onSubmit = async (values: ReservationFormValues) => {
-    try {
-      await createReservation.mutateAsync({
-        businessId: business.id,
-        startTime: new Date(values.startTime).toISOString(),
-        endTime: new Date(values.endTime).toISOString(),
-        numberOfPeople: values.numberOfPeople,
-      })
-      form.reset()
-      setOpen(false)
-    } catch (error) {
-      const message = (error as { response?: { data?: { message?: string } } })?.response?.data?.message
-      if (message) {
-        toast.error(message)
-      }
-    }
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="secondary">Reservar</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Crear reservación en {business.name}</DialogTitle>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="startTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hora de inicio</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      value={convertToDateTimeLocal(field.value)}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="endTime"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hora de fin</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="datetime-local"
-                      value={convertToDateTimeLocal(field.value)}
-                      onChange={(event) => field.onChange(event.target.value)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="numberOfPeople"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Número de personas</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={8}
-                      value={field.value}
-                      onChange={(event) => field.onChange(Number(event.target.value))}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button type="submit" disabled={createReservation.isPending}>
-                {createReservation.isPending ? "Creando..." : "Confirmar"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  )
 }
 
 const CustomerBusinessesView = () => {

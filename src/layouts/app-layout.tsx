@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link, NavLink, Outlet } from "react-router-dom"
 
 import { ThemeToggle } from "@/components/shared/theme-toggle"
@@ -13,14 +14,22 @@ import {
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 
-const navItems = [
-  { label: "Inicio", to: "/" },
-  { label: "Negocios", to: "/businesses" },
-  { label: "Reservaciones", to: "/reservations" },
-]
-
 export const AppLayout = () => {
   const { user, logout } = useAuth()
+  const navigation = useMemo(() => {
+    const items = [
+      { label: "Inicio", to: "/" },
+      { label: "Negocios", to: "/businesses" },
+    ]
+
+    if (user?.role === "CUSTOMER") {
+      items.push({ label: "Favoritos", to: "/favorites" })
+    }
+
+    items.push({ label: "Reservaciones", to: "/reservations" })
+
+    return items
+  }, [user?.role])
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -32,7 +41,7 @@ export const AppLayout = () => {
             </Link>
 
             <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
-              {navItems.map((item) => (
+              {navigation.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}

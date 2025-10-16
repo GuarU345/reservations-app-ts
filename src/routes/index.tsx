@@ -5,6 +5,9 @@ import { AppLayout } from "@/layouts/app-layout"
 import { SignInPage } from "@/pages/auth/sign-in-page"
 import { SignUpPage } from "@/pages/auth/sign-up-page"
 import { DashboardPage } from "@/pages/dashboard/dashboard-page"
+import { BusinessesPage } from "@/pages/businesses/businesses-page"
+import { FavoritesPage } from "@/pages/favorites/favorites-page"
+import { ReservationsPage } from "@/pages/reservations/reservations-page"
 
 import { ProtectedRoute } from "./protected-route"
 import { PublicRoute } from "./public-route"
@@ -17,8 +20,9 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: "businesses", element: <div>Pantalla de negocios en construcción</div> },
-          { path: "reservations", element: <div>Pantalla de reservaciones en construcción</div> },
+          { path: "businesses", element: <BusinessesPage /> },
+          { path: "favorites", element: <FavoritesPage /> },
+          { path: "reservations", element: <ReservationsPage /> },
         ],
       },
     ],

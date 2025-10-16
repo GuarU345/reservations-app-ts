@@ -105,9 +105,10 @@ export const useToggleFavorite = () => {
   })
 }
 
-export const useFavoriteBusinesses = () => {
+export const useFavoriteBusinesses = (options?: { enabled?: boolean }) => {
   return useQuery({
     queryKey: queryKeys.favorites.list,
     queryFn: favoritesApi.getLikedBusinesses,
+    enabled: options?.enabled ?? true,
   })
 }
