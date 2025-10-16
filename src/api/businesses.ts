@@ -1,9 +1,30 @@
 import { api } from "@/lib/api-client"
-import type { BusinessDetail, BusinessHours, BusinessSummary, UpsertBusinessPayload, UpdateBusinessHoursPayload } from "@/types/business"
+import type {
+  BusinessDetail,
+  BusinessHours,
+  BusinessSummary,
+  UpsertBusinessPayload,
+  UpdateBusinessHoursPayload,
+} from "@/types/business"
 
-export const getBusinesses = async (categoryId?: string) => {
+type BusinessListFilters = {
+  categoryId?: string
+  owner?: boolean
+}
+
+export const getBusinesses = async (filters?: BusinessListFilters) => {
+  const params: Record<string, string> = {}
+
+  if (filters?.categoryId) {
+    params.categoryId = filters.categoryId
+  }
+
+  if (filters?.owner) {
+    params.owner = "true"
+  }
+
   const { data } = await api.get<BusinessSummary[]>("/businesses", {
-    params: categoryId ? { categoryId } : undefined,
+    params: Object.keys(params).length ? params : undefined,
   })
   return data
 }

@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 import { z } from "zod"
 
 import { Badge } from "@/components/ui/badge"
@@ -70,7 +71,7 @@ const CustomerBusinessesView = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("todas")
   const { data: categories } = useBusinessCategories()
   const categoryId = categoryFilter === "todas" ? undefined : categoryFilter
-  const { data: businesses, isLoading } = useBusinesses(categoryId)
+  const { data: businesses, isLoading } = useBusinesses({ categoryId })
   const { data: favorites } = useFavoriteBusinesses()
   const toggleFavorite = useToggleFavorite()
 
@@ -314,26 +315,63 @@ const BusinessHoursTable = ({ businessId }: { businessId: string }) => {
     }
   }, [hours])
 
-  const handleChange = (hourId: string, field: keyof BusinessHours, value: string | boolean) => {
+  const handleChange = (hourId: string, field: "is_closed" | "open_time" | "close_time", value: string | boolean) => {
     setLocalHours((prev) =>
       prev.map((item) =>
         item.id === hourId
-          ? {
-              ...item,
-              [field]: value,
-            }
+          ? (() => {
+              if (field === "is_closed") {
+                const isClosed = Boolean(value)
+                return {
+                  ...item,
+                  is_closed: isClosed,
+                  open_time: isClosed ? null : item.open_time ?? "09:00",
+                  close_time: isClosed ? null : item.close_time ?? "18:00",
+                }
+              }
+
+              if (field === "open_time" || field === "close_time") {
+                const timeValue = typeof value === "string" ? value : ""
+                return {
+                  ...item,
+                  [field]: timeValue || null,
+                }
+              }
+
+              return item
+            })()
           : item,
       ),
     )
   }
 
   const handleSave = (hour: BusinessHours) => {
+    const normalizedOpen = formatHour(hour.open_time)
+    const normalizedClose = formatHour(hour.close_time)
+
+    if (!hour.is_closed) {
+      if (!normalizedOpen || !normalizedClose) {
+        toast.error("Define las horas de apertura y cierre antes de guardar")
+        return
+      }
+
+      const toMinutes = (time: string) => {
+        const [h, m] = time.split(":").map(Number)
+        return h * 60 + m
+      }
+
+      if (toMinutes(normalizedOpen) >= toMinutes(normalizedClose)) {
+        toast.error("La hora de cierre debe ser mayor a la hora de apertura")
+        return
+      }
+    }
+
     updateHours.mutate({
       id: hour.id,
       payload: {
         isClosed: hour.is_closed,
-        openTime: hour.is_closed ? undefined : formatHour(hour.open_time),
-        closeTime: hour.is_closed ? undefined : formatHour(hour.close_time),
+        openTime: hour.is_closed ? undefined : normalizedOpen,
+        closeTime: hour.is_closed ? undefined : normalizedClose,
       },
     })
   }
@@ -402,132 +440,162 @@ const BusinessHoursTable = ({ businessId }: { businessId: string }) => {
   )
 }
 
-const OwnerBusinessView = () => {
-  const { user } = useAuth()
-  const { data: businesses, isLoading } = useBusinesses()
-  const createBusiness = useCreateBusiness()
+const OwnerBusinessCard = ({ business }: { business: BusinessSummary }) => {
+  const updateBusiness = useUpdateBusiness(business.id)
   const deleteBusiness = useDeleteBusiness()
-  const [businessToDelete, setBusinessToDelete] = useState<string | null>(null)
-
-  const myBusiness = useMemo(() => {
-    if (!user?.id) return undefined
-    return businesses?.find((business) => business.user_id === user.id)
-  }, [businesses, user?.id])
-
-  const updateBusiness = useUpdateBusiness(myBusiness?.id ?? "")
-
-  const handleCreate = async (values: BusinessFormValues) => {
-    await createBusiness.mutateAsync(values as UpsertBusinessPayload)
-  }
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handleUpdate = async (values: BusinessFormValues) => {
-    if (!myBusiness) return
     await updateBusiness.mutateAsync(values as UpsertBusinessPayload)
   }
 
   const handleDelete = async () => {
-    if (!businessToDelete) return
-    await deleteBusiness.mutateAsync(businessToDelete)
-    setBusinessToDelete(null)
+    await deleteBusiness.mutateAsync(business.id)
+    setConfirmDelete(false)
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex-col gap-4 space-y-0 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-1">
+          <CardTitle>{business.name}</CardTitle>
+          <CardDescription>{business.description}</CardDescription>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="secondary">{business.business_categories?.category ?? "Sin categoría"}</Badge>
+          <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>¿Eliminar negocio?</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                Esta acción despublicará tu negocio. Podrás registrarlo nuevamente si lo necesitas.
+              </p>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleDelete} disabled={deleteBusiness.isPending}>
+                  {deleteBusiness.isPending ? "Eliminando..." : "Eliminar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button variant="destructive" size="sm" onClick={() => setConfirmDelete(true)}>
+            Eliminar negocio
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p>
+            <span className="font-medium text-foreground">Dirección:</span> {business.address}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Teléfono:</span> {business.phone}
+          </p>
+          <p>
+            <span className="font-medium text-foreground">Correo:</span> {business.email}
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Información general</h3>
+            <BusinessForm
+              defaultValues={{
+                name: business.name,
+                description: business.description,
+                address: business.address,
+                phone: business.phone,
+                email: business.email,
+                categoryId: business.category_id,
+              }}
+              onSubmit={handleUpdate}
+              submitting={updateBusiness.isPending}
+              actionLabel="Guardar cambios"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground">Horarios de atención</h3>
+            <BusinessHoursTable businessId={business.id} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+const OwnerBusinessView = () => {
+  const { data: businesses, isLoading } = useBusinesses({ owner: true })
+  const createBusiness = useCreateBusiness()
+  const [showCreateForm, setShowCreateForm] = useState(false)
+
+  const hasBusinesses = (businesses?.length ?? 0) > 0
+
+  useEffect(() => {
+    if (!isLoading && !hasBusinesses) {
+      setShowCreateForm(true)
+    }
+  }, [hasBusinesses, isLoading])
+
+  const handleCreate = async (values: BusinessFormValues) => {
+    try {
+      await createBusiness.mutateAsync(values as UpsertBusinessPayload)
+      setShowCreateForm(false)
+    } catch (error) {
+      // el toast es manejado por el hook de mutación
+      console.error(error)
+    }
   }
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Cargando tu negocio...</p>
-  }
-
-  if (!myBusiness) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Registra tu primer negocio</CardTitle>
-          <CardDescription>Completa la información para aparecer en el catálogo y recibir reservaciones.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BusinessForm
-            onSubmit={handleCreate}
-            submitting={createBusiness.isPending}
-            actionLabel="Registrar negocio"
-          />
-        </CardContent>
-      </Card>
-    )
+    return <p className="text-sm text-muted-foreground">Cargando tus negocios...</p>
   }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex-row items-start justify-between gap-4">
-          <div>
-            <CardTitle>{myBusiness.name}</CardTitle>
-            <CardDescription>{myBusiness.description}</CardDescription>
-          </div>
-          <Badge variant="secondary">{myBusiness.business_categories?.category ?? "Sin categoría"}</Badge>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p><span className="font-medium text-foreground">Dirección:</span> {myBusiness.address}</p>
-            <p><span className="font-medium text-foreground">Teléfono:</span> {myBusiness.phone}</p>
-            <p><span className="font-medium text-foreground">Correo:</span> {myBusiness.email}</p>
-          </div>
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">Gestión de negocios</h2>
+          <p className="text-sm text-muted-foreground">
+            Administra la información y los horarios de todos tus negocios.
+          </p>
+        </div>
+        <Button variant={showCreateForm ? "outline" : "default"} onClick={() => setShowCreateForm((prev) => !prev)}>
+          {showCreateForm ? "Cerrar formulario" : "Registrar nuevo negocio"}
+        </Button>
+      </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Dialog open={Boolean(businessToDelete)} onOpenChange={(open) => !open && setBusinessToDelete(null)}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>¿Eliminar negocio?</DialogTitle>
-                </DialogHeader>
-                <p className="text-sm text-muted-foreground">
-                  Esta acción despublicará tu negocio. Podrás registrarlo nuevamente si lo necesitas.
-                </p>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setBusinessToDelete(null)}>
-                    Cancelar
-                  </Button>
-                  <Button variant="destructive" onClick={handleDelete}>
-                    Eliminar
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+      {showCreateForm ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Registrar negocio</CardTitle>
+            <CardDescription>Completa la información para aparecer en el catálogo y recibir reservaciones.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BusinessForm
+              onSubmit={handleCreate}
+              submitting={createBusiness.isPending}
+              actionLabel="Registrar negocio"
+            />
+          </CardContent>
+        </Card>
+      ) : null}
 
-            <Button variant="destructive" onClick={() => setBusinessToDelete(myBusiness.id)}>
-              Eliminar negocio
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {!hasBusinesses && !showCreateForm ? (
+        <Card className="border-dashed">
+          <CardHeader>
+            <CardTitle>Aún no tienes negocios registrados</CardTitle>
+            <CardDescription>Utiliza el botón “Registrar nuevo negocio” para comenzar.</CardDescription>
+          </CardHeader>
+        </Card>
+      ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Actualizar información</CardTitle>
-          <CardDescription>Modifica los datos visibles para tus clientes.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BusinessForm
-            defaultValues={{
-              name: myBusiness.name,
-              description: myBusiness.description,
-              address: myBusiness.address,
-              phone: myBusiness.phone,
-              email: myBusiness.email,
-              categoryId: myBusiness.category_id,
-            }}
-            onSubmit={handleUpdate}
-            submitting={updateBusiness.isPending}
-            actionLabel="Guardar cambios"
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Horarios de atención</CardTitle>
-          <CardDescription>Habilita o deshabilita días y define tus horarios.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <BusinessHoursTable businessId={myBusiness.id} />
-        </CardContent>
-      </Card>
+      {businesses?.map((business) => (
+        <OwnerBusinessCard key={business.id} business={business} />
+      ))}
     </div>
   )
 }

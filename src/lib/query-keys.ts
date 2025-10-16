@@ -6,9 +6,11 @@ export const queryKeys = {
     list: ["categories"] as const,
   },
   businesses: {
-    list: (categoryId?: string) => ["businesses", { categoryId }] as const,
-    detail: (businessId: string) => ["business", businessId] as const,
-    hours: (businessId: string) => ["business", businessId, "hours"] as const,
+    root: ["businesses"] as const,
+    list: (filters?: { categoryId?: string; owner?: boolean }) =>
+      ["businesses", "list", filters ?? {}] as const,
+    detail: (businessId: string) => ["businesses", "detail", businessId] as const,
+    hours: (businessId: string) => ["businesses", "detail", businessId, "hours"] as const,
   },
   favorites: {
     list: ["favorites"] as const,

@@ -6,10 +6,15 @@ import * as favoritesApi from "@/api/favorites"
 import { queryKeys } from "@/lib/query-keys"
 import type { UpsertBusinessPayload, UpdateBusinessHoursPayload } from "@/types/business"
 
-export const useBusinesses = (categoryId?: string) => {
+type BusinessListFilters = {
+  categoryId?: string
+  owner?: boolean
+}
+
+export const useBusinesses = (filters?: BusinessListFilters) => {
   return useQuery({
-    queryKey: queryKeys.businesses.list(categoryId),
-    queryFn: () => businessesApi.getBusinesses(categoryId),
+    queryKey: queryKeys.businesses.list(filters),
+    queryFn: () => businessesApi.getBusinesses(filters),
   })
 }
 
@@ -36,7 +41,7 @@ export const useCreateBusiness = () => {
     mutationFn: (payload: UpsertBusinessPayload) => businessesApi.createBusiness(payload),
     onSuccess: (data) => {
       toast.success("Negocio creado correctamente")
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.list(undefined) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(data.id) })
     },
     onError: () => {
@@ -53,7 +58,7 @@ export const useUpdateBusiness = (businessId: string) => {
     onSuccess: () => {
       toast.success("Negocio actualizado")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(businessId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.list(undefined) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
     },
     onError: () => toast.error("No se pudo actualizar el negocio"),
   })
@@ -66,7 +71,7 @@ export const useDeleteBusiness = () => {
     mutationFn: (businessId: string) => businessesApi.deleteBusiness(businessId),
     onSuccess: () => {
       toast.success("Negocio eliminado")
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.list(undefined) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
     },
     onError: () => toast.error("No se pudo eliminar el negocio"),
   })
@@ -81,6 +86,7 @@ export const useUpdateBusinessHours = () => {
     onSuccess: (data) => {
       toast.success("Horario actualizado")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.hours(data.business_id) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(data.business_id) })
     },
     onError: () => toast.error("No se pudo actualizar el horario"),
   })
@@ -97,7 +103,7 @@ export const useToggleFavorite = () => {
       return favoritesApi.likeBusiness(businessId)
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.list(undefined) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
       queryClient.invalidateQueries({ queryKey: queryKeys.favorites.list })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(variables.businessId) })
     },
