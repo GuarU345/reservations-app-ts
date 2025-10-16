@@ -1,73 +1,47 @@
-# React + TypeScript + Vite
+# Reservations App (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación React + TypeScript que consume la API de reservaciones. Incluye configuración base con React Router, React Query, contextos de autenticación y componentes de la librería shadcn/ui.
 
-Currently, two official plugins are available:
+## Configuración inicial
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Copia el archivo de variables de entorno y ajusta la URL de la API según tu entorno local o remoto.
 
-## React Compiler
-
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. Instala las dependencias con pnpm (recomendado por el proyecto).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+pnpm install
 ```
+
+3. Ejecuta el entorno de desarrollo.
+
+```bash
+pnpm dev
+```
+
+La aplicación estará disponible en `http://localhost:5173/` por defecto.
+
+## Scripts disponibles
+
+- `pnpm dev`: servidor de desarrollo con Vite.
+- `pnpm build`: compila la aplicación.
+- `pnpm preview`: vista previa de la build resultante.
+- `pnpm lint`: ejecuta ESLint.
+
+## Estructura relevante
+
+- `src/providers/`: proveedores globales (tema, React Query, autenticación).
+- `src/context/`: contexto y proveedor de autenticación.
+- `src/lib/`: utilidades compartidas (cliente HTTP, query client, almacenamiento).
+- `src/routes/`: configuración de rutas protegidas y públicas.
+- `src/layouts/`: layouts base para la app y la zona de autenticación.
+- `src/pages/`: páginas que se irán completando en siguientes iteraciones.
+
+## Próximos pasos
+
+- Implementar formularios de autenticación con react-hook-form + Zod.
+- Conectar las vistas de negocios y reservaciones con la API REST.
+- Añadir pruebas y casos de uso detallados para ambos roles (`CUSTOMER` y `BUSINESS_OWNER`).
