@@ -8,7 +8,7 @@ export const AuthLayout = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <Link to="/" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            reservations.app
+            Bookly
           </Link>
           <CardTitle className="text-2xl">Bienvenido de vuelta</CardTitle>
           <CardDescription>Ingresa tus credenciales para continuar</CardDescription>

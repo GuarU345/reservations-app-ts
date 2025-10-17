@@ -37,7 +37,7 @@ export const AppLayout = () => {
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-6">
           <div className="flex items-center gap-6">
             <Link to="/" className="text-base font-semibold tracking-tight">
-              reservations.app
+              Bookly
             </Link>
 
             <nav className="hidden items-center gap-1 text-sm font-medium md:flex">

@@ -19,10 +19,6 @@ export const getBusinesses = async (filters?: BusinessListFilters) => {
     params.categoryId = filters.categoryId
   }
 
-  if (filters?.owner) {
-    params.owner = "true"
-  }
-
   const { data } = await api.get<BusinessSummary[]>("/businesses", {
     params: Object.keys(params).length ? params : undefined,
   })
