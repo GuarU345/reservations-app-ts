@@ -12,9 +12,6 @@ export const queryKeys = {
     detail: (businessId: string) => ["businesses", "detail", businessId] as const,
     hours: (businessId: string) => ["businesses", "detail", businessId, "hours"] as const,
   },
-  favorites: {
-    list: ["favorites"] as const,
-  },
   reservations: {
     list: ["reservations"] as const,
   },

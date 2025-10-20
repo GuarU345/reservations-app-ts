@@ -22,10 +22,6 @@ export const AppLayout = () => {
       { label: "Negocios", to: "/businesses" },
     ]
 
-    if (user?.role === "CUSTOMER") {
-      items.push({ label: "Favoritos", to: "/favorites" })
-    }
-
     items.push({ label: "Reservaciones", to: "/reservations" })
 
     return items
