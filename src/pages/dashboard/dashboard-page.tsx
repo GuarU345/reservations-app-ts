@@ -1,8 +1,31 @@
+import { tokenIsActive } from "@/api/auth"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/hooks/use-auth"
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 export const DashboardPage = () => {
-  const { user } = useAuth()
+  const { user, token, isAuthenticated, setSession } = useAuth()
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const checkTokenIsActive = async () => {
+      try {
+        const response = await tokenIsActive(token!)
+        if (!response.active) {
+          setSession(null)
+          navigate("/auth/sign-in")
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    if (isAuthenticated && token) {
+      checkTokenIsActive()
+    }
+  }, [isAuthenticated])
 
   return (
     <div className="grid gap-6">
