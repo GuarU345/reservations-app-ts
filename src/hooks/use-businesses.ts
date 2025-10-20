@@ -43,10 +43,7 @@ export const useCreateBusiness = () => {
       toast.success("Negocio creado correctamente")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(data.id) })
-    },
-    onError: () => {
-      toast.error("No se pudo crear el negocio")
-    },
+    }
   })
 }
 
@@ -59,8 +56,7 @@ export const useUpdateBusiness = (businessId: string) => {
       toast.success("Negocio actualizado")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(businessId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
-    },
-    onError: () => toast.error("No se pudo actualizar el negocio"),
+    }
   })
 }
 
@@ -72,8 +68,7 @@ export const useDeleteBusiness = () => {
     onSuccess: () => {
       toast.success("Negocio eliminado")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
-    },
-    onError: () => toast.error("No se pudo eliminar el negocio"),
+    }
   })
 }
 
@@ -87,8 +82,7 @@ export const useUpdateBusinessHours = () => {
       toast.success("Horario actualizado")
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.hours(data.business_id) })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(data.business_id) })
-    },
-    onError: () => toast.error("No se pudo actualizar el horario"),
+    }
   })
 }
 
@@ -106,8 +100,7 @@ export const useToggleFavorite = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.root })
       queryClient.invalidateQueries({ queryKey: queryKeys.favorites.list })
       queryClient.invalidateQueries({ queryKey: queryKeys.businesses.detail(variables.businessId) })
-    },
-    onError: () => toast.error("No se pudo actualizar el favorito"),
+    }
   })
 }
 
