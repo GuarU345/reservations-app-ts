@@ -50,10 +50,6 @@ export const DashboardPage = () => {
             <span className="text-muted-foreground">Correo:</span>
             <p className="font-medium">{user?.email ?? "Sin definir"}</p>
           </div>
-          <div>
-            <span className="text-muted-foreground">Rol:</span>
-            <p className="font-medium">{user?.role ?? "Sin asignar"}</p>
-          </div>
         </CardContent>
       </Card>
     </div>
