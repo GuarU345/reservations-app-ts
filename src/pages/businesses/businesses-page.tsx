@@ -467,9 +467,11 @@ const OwnerBusinessView = () => {
             Administra la información y los horarios de todos tus negocios.
           </p>
         </div>
-        <Button variant={showCreateForm ? "outline" : "default"} onClick={() => setShowCreateForm((prev) => !prev)}>
-          {showCreateForm ? "Cerrar formulario" : "Registrar nuevo negocio"}
-        </Button>
+        {!hasBusinesses && (
+          <Button variant={showCreateForm ? "outline" : "default"} onClick={() => setShowCreateForm((prev) => !prev)}>
+            {showCreateForm ? "Cerrar formulario" : "Registrar nuevo negocio"}
+          </Button>
+        )}
       </div>
 
       {showCreateForm ? (
