@@ -5,7 +5,7 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 
 export const DashboardPage = () => {
-  const { user, token, isAuthenticated, setSession } = useAuth()
+  const { user, token, isAuthenticated,logout } = useAuth()
 
   const navigate = useNavigate()
 
@@ -14,7 +14,7 @@ export const DashboardPage = () => {
       try {
         const response = await tokenIsActive(token!)
         if (!response.active) {
-          setSession(null)
+          logout()
           navigate("/auth/sign-in")
         }
       } catch (error) {
