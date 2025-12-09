@@ -11,6 +11,30 @@ export interface SignUpPayload {
 export interface SignInPayload {
   email: string
   password: string
+  role?: UserRole
+}
+
+export interface SignInResponse {
+  user: {
+    id: string
+    email: string
+  }
+}
+
+export interface VerifyCodePayload {
+  user_id: string
+  code: number
+}
+
+export interface VerifyCodeResponse {
+  message: string
+  token: string
+  user: {
+    id: string
+    name: string
+    email: string
+    role: UserRole
+  }
 }
 
 export interface AuthResponse {

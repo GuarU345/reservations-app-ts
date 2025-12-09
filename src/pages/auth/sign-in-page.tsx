@@ -6,10 +6,10 @@ import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { z } from "zod"
 
+import * as authApi from "@/api/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/hooks/use-auth"
 
 const signInSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
@@ -20,7 +20,6 @@ type SignInFormValues = z.infer<typeof signInSchema>
 
 export const SignInPage = () => {
   const navigate = useNavigate()
-  const { login } = useAuth()
   const [submitting, setSubmitting] = useState(false)
 
   const form = useForm<SignInFormValues>({
@@ -34,15 +33,22 @@ export const SignInPage = () => {
   const handleSubmit = async (values: SignInFormValues) => {
     setSubmitting(true)
     try {
-
       const data = {
         ...values,
-        role: 'BUSINESS_OWNER',
+        role: 'BUSINESS_OWNER' as const,
       }
 
-      await login(data)
-      toast.success("Sesión iniciada correctamente")
-      navigate("/", { replace: true })
+      const response = await authApi.signin(data)
+      
+      // Redirigir a la página de verificación de código
+      toast.success("Te hemos enviado un código de verificación")
+      navigate("/auth/verify-code", {
+        replace: true,
+        state: {
+          userId: response.user.id,
+          email: response.user.email,
+        },
+      })
     } catch (error) {
       const err = error as AxiosError<{ message?: string }>
       const message = err.response?.data?.message ?? "No se pudo iniciar sesión"

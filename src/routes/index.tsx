@@ -4,6 +4,7 @@ import { AuthLayout } from "@/layouts/auth-layout"
 import { AppLayout } from "@/layouts/app-layout"
 import { SignInPage } from "@/pages/auth/sign-in-page"
 import { SignUpPage } from "@/pages/auth/sign-up-page"
+import { VerifyCodePage } from "@/pages/auth/verify-code-page"
 import { DashboardPage } from "@/pages/dashboard/dashboard-page"
 import { BusinessesPage } from "@/pages/businesses/businesses-page"
 import { ReservationsPage } from "@/pages/reservations/reservations-page"
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="sign-in" replace /> },
           { path: "sign-in", element: <SignInPage /> },
           { path: "sign-up", element: <SignUpPage /> },
+          { path: "verify-code", element: <VerifyCodePage /> },
         ],
       },
     ],
