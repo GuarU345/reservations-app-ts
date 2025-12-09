@@ -9,13 +9,6 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useAuth } from "@/hooks/use-auth"
 import type { UserRole } from "@/types/user"
 
@@ -32,7 +25,7 @@ const signUpSchema = z.object({
     .string()
     .min(10, "El teléfono debe tener 10 dígitos")
     .max(13, "El teléfono no debe exceder 13 dígitos"),
-  role: z.enum(["CUSTOMER", "BUSINESS_OWNER"] satisfies [UserRole, UserRole]),
+  role: z.enum(["BUSINESS_OWNER"] satisfies [UserRole]),
 })
 
 type SignUpFormValues = z.infer<typeof signUpSchema>
@@ -49,7 +42,7 @@ export const SignUpPage = () => {
       email: "",
       password: "",
       phone: "",
-      role: "CUSTOMER",
+      role: "BUSINESS_OWNER",
     },
   })
 
@@ -124,28 +117,6 @@ export const SignUpPage = () => {
                 <FormControl>
                   <Input placeholder="521234567890" autoComplete="tel" {...field} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Rol</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un rol" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="CUSTOMER">Cliente</SelectItem>
-                    <SelectItem value="BUSINESS_OWNER">Dueño de negocio</SelectItem>
-                  </SelectContent>
-                </Select>
                 <FormMessage />
               </FormItem>
             )}

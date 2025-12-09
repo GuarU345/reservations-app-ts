@@ -22,10 +22,6 @@ export const AppLayout = () => {
       { label: "Negocios", to: "/businesses" },
     ]
 
-    if (user?.role === "CUSTOMER") {
-      items.push({ label: "Favoritos", to: "/favorites" })
-    }
-
     items.push({ label: "Reservaciones", to: "/reservations" })
 
     return items
@@ -37,7 +33,7 @@ export const AppLayout = () => {
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-6">
           <div className="flex items-center gap-6">
             <Link to="/" className="text-base font-semibold tracking-tight">
-              reservations.app
+              Bookly
             </Link>
 
             <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
@@ -74,10 +70,6 @@ export const AppLayout = () => {
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-xs uppercase text-muted-foreground">
-                  Rol: {user?.role ?? "N/A"}
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={logout}>Cerrar sesión</DropdownMenuItem>
               </DropdownMenuContent>

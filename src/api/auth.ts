@@ -11,3 +11,12 @@ export const signup = async (payload: SignUpPayload) => {
   const { data } = await api.post<User>("/signup", payload)
   return data
 }
+
+export const tokenIsActive = async (token: string) => {
+  const { data } = await api.get("/session/active", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  return data
+}

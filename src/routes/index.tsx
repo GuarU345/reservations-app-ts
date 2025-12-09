@@ -6,7 +6,6 @@ import { SignInPage } from "@/pages/auth/sign-in-page"
 import { SignUpPage } from "@/pages/auth/sign-up-page"
 import { DashboardPage } from "@/pages/dashboard/dashboard-page"
 import { BusinessesPage } from "@/pages/businesses/businesses-page"
-import { FavoritesPage } from "@/pages/favorites/favorites-page"
 import { ReservationsPage } from "@/pages/reservations/reservations-page"
 
 import { ProtectedRoute } from "./protected-route"
@@ -21,7 +20,6 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: "businesses", element: <BusinessesPage /> },
-          { path: "favorites", element: <FavoritesPage /> },
           { path: "reservations", element: <ReservationsPage /> },
         ],
       },

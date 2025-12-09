@@ -20,8 +20,7 @@ export const useCreateReservation = () => {
     onSuccess: () => {
       toast.success("Reservación creada")
       queryClient.invalidateQueries({ queryKey: queryKeys.reservations.list })
-    },
-    onError: () => toast.error("No se pudo crear la reservación"),
+    }
   })
 }
 
@@ -34,7 +33,6 @@ export const useConfirmReservation = () => {
       toast.success("Reservación confirmada")
       queryClient.invalidateQueries({ queryKey: queryKeys.reservations.list })
     },
-    onError: () => toast.error("No se pudo confirmar la reservación"),
   })
 }
 
@@ -46,8 +44,7 @@ export const useCompleteReservation = () => {
     onSuccess: () => {
       toast.success("Reservación completada")
       queryClient.invalidateQueries({ queryKey: queryKeys.reservations.list })
-    },
-    onError: () => toast.error("No se pudo completar la reservación"),
+    }
   })
 }
 
@@ -60,7 +57,6 @@ export const useCancelReservation = () => {
     onSuccess: () => {
       toast.success("Reservación cancelada")
       queryClient.invalidateQueries({ queryKey: queryKeys.reservations.list })
-    },
-    onError: () => toast.error("No se pudo cancelar la reservación"),
+    }
   })
 }

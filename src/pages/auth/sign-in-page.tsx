@@ -34,7 +34,13 @@ export const SignInPage = () => {
   const handleSubmit = async (values: SignInFormValues) => {
     setSubmitting(true)
     try {
-      await login(values)
+
+      const data = {
+        ...values,
+        role: 'BUSINESS_OWNER',
+      }
+
+      await login(data)
       toast.success("Sesión iniciada correctamente")
       navigate("/", { replace: true })
     } catch (error) {
