@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client"
-import type { AuthResponse, SignInPayload, SignInResponse, SignUpPayload, VerifyCodePayload, VerifyCodeResponse } from "@/types/auth"
+import type { SignInPayload, SignInResponse, SignUpPayload, VerifyCodePayload, VerifyCodeResponse } from "@/types/auth"
 import type { User } from "@/types/user"
 
 export const signin = async (payload: SignInPayload) => {

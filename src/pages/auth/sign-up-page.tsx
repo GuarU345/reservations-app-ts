@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/hooks/use-auth"
 import type { UserRole } from "@/types/user"
+import ReCAPTCHA from "react-google-recaptcha";
 
 const signUpSchema = z.object({
   name: z.string().min(3, "El nombre debe tener al menos 3 caracteres"),
@@ -34,6 +35,7 @@ export const SignUpPage = () => {
   const navigate = useNavigate()
   const { register: registerUser } = useAuth()
   const [submitting, setSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
@@ -49,6 +51,11 @@ export const SignUpPage = () => {
   const handleSubmit = async (values: SignUpFormValues) => {
     setSubmitting(true)
     try {
+      if (!captchaToken) {
+        toast.error("Debes completar el reCAPTCHA");
+        return;
+      }
+
       await registerUser(values)
       toast.success("Cuenta creada, inicia sesión")
       navigate("/auth/sign-in", { replace: true })
@@ -121,6 +128,19 @@ export const SignUpPage = () => {
               </FormItem>
             )}
           />
+
+          <div
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <ReCAPTCHA
+              sitekey={import.meta.env.VITE_SITE_KEY}
+              onChange={(token) => setCaptchaToken(token)}
+            />
+          </div>
 
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? "Creando cuenta..." : "Crear cuenta"}
