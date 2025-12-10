@@ -1,6 +1,6 @@
 import { createContext } from "react"
 
-import type { AuthResponse, AuthStatus, SignInPayload, SignUpPayload } from "@/types/auth"
+import type { AuthResponse, AuthStatus, SignInPayload, SignInResponse, SignUpPayload } from "@/types/auth"
 import type { User } from "@/types/user"
 
 export interface AuthContextValue {
@@ -8,7 +8,7 @@ export interface AuthContextValue {
   token: string | null
   status: AuthStatus
   isAuthenticated: boolean
-  login: (payload: SignInPayload) => Promise<AuthResponse>
+  login: (payload: SignInPayload) => Promise<SignInResponse>
   register: (payload: SignUpPayload) => Promise<User>
   logout: () => void
   setSession: (session: AuthResponse) => void

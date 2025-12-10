@@ -58,15 +58,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     async (payload: SignInPayload) => {
       setState((current) => ({ ...current, status: "loading" }));
       try {
-        const session = await authApi.signin(payload);
-        persistSession(session);
-        return session;
+        const response = await authApi.signin(payload);
+        setState((current) => ({ ...current, status: "unauthenticated" }));
+        return response;
       } catch (error) {
         clearSession();
         throw error;
       }
     },
-    [clearSession, persistSession]
+    [clearSession]
   );
 
   const register = useCallback(

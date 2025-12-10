@@ -69,6 +69,7 @@ export const VerifyCodePage = () => {
       toast.success("Código verificado correctamente")
       navigate("/", { replace: true })
     } catch (error) {
+      console.log(error)
       const err = error as AxiosError<{ message?: string }>
       const message = err.response?.data?.message ?? "Código inválido o expirado"
       toast.error(message)
