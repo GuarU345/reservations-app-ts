@@ -10,6 +10,7 @@ import * as authApi from "@/api/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import ReCAPTCHA from "react-google-recaptcha";
 
 const signInSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
@@ -21,6 +22,7 @@ type SignInFormValues = z.infer<typeof signInSchema>
 export const SignInPage = () => {
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const form = useForm<SignInFormValues>({
     resolver: zodResolver(signInSchema),
@@ -38,8 +40,13 @@ export const SignInPage = () => {
         role: 'BUSINESS_OWNER' as const,
       }
 
+      if (!captchaToken) {
+        toast.error("Debes completar el reCAPTCHA");
+        return;
+      }
+
       const response = await authApi.signin(data)
-      
+
       // Redirigir a la página de verificación de código
       toast.success("Te hemos enviado un código de verificación")
       navigate("/auth/verify-code", {
@@ -89,6 +96,19 @@ export const SignInPage = () => {
               </FormItem>
             )}
           />
+
+          <div
+            style={{
+              marginTop: "20px",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <ReCAPTCHA
+              sitekey={import.meta.env.VITE_SITE_KEY}
+              onChange={(token) => setCaptchaToken(token)}
+            />
+          </div>
 
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? "Ingresando..." : "Ingresar"}
